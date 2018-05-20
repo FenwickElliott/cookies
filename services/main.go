@@ -2,12 +2,26 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/fenwickelliott/cookies/sync"
 	"gopkg.in/mgo.v2"
 )
 
 func main() {
+	if len(os.Args) == 1 {
+		fmt.Println("A command is required")
+		return
+	}
+	switch os.Args[1] {
+	case "new":
+		new()
+	default:
+		fmt.Println("Command not recognized")
+	}
+}
+
+func new() {
 	fmt.Println("Welcome to the cookie sync service generator!")
 	fmt.Println("We need to ask a few questions about the service to be generated")
 	var name, address, port, redirect, mongoServer string
