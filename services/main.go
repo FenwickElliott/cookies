@@ -6,6 +6,7 @@ import (
 
 	"github.com/fenwickelliott/cookies/sync"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func main() {
@@ -16,6 +17,8 @@ func main() {
 	switch os.Args[1] {
 	case "new":
 		new()
+	case "update":
+		update()
 	case "delete":
 		delete()
 	default:
@@ -62,6 +65,7 @@ func new() {
 
 	session, err := mgo.Dial("cookies.fenwickelliott.io")
 	check(err)
+	defer session.Close()
 	c := session.DB("services").C("services")
 
 	var checkExisting sync.Service
@@ -79,20 +83,62 @@ func new() {
 	fmt.Println(service.Name, "successfully created")
 }
 
+func update() {
+	var name, address, port, redirect, mongoServer string
+	fmt.Print("Name: ")
+	session, err := mgo.Dial("cookies.fenwickelliott.io")
+	check(err)
+	defer session.Close()
+	c := session.DB("services").C("services")
+	fmt.Scanln(&name)
+	// service := Service{}
+	var res bson.M
+	err = c.FindId(name).One(&res)
+	if err != nil && err.Error() == "not found" {
+		fmt.Println("Service", name, "not found")
+		return
+	}
+	check(err)
+	fmt.Print("Address: ")
+	fmt.Scanln(&address)
+	if address != "" {
+		err = c.UpdateId(name, bson.M{"$set": bson.M{"host": address}})
+		check(err)
+	}
+	fmt.Print("Port: ")
+	fmt.Scanln(&port)
+	if port != "" {
+		err = c.UpdateId(name, bson.M{"$set": bson.M{"port": port}})
+		check(err)
+	}
+	fmt.Print("Redirect: ")
+	fmt.Scanln(&redirect)
+	if redirect != "" {
+		err = c.UpdateId(name, bson.M{"$set": bson.M{"redirect": redirect}})
+		check(err)
+	}
+	fmt.Print("MongoServer: ")
+	fmt.Scanln(&mongoServer)
+	if mongoServer != "" {
+		err = c.UpdateId(name, bson.M{"$set": bson.M{"mongoserver": mongoServer}})
+		check(err)
+	}
+	fmt.Println(name, "successfully updated")
+}
 func delete() {
 	var name string
 	fmt.Print("Name of service to delete: ")
 	fmt.Scanln(&name)
 	session, err := mgo.Dial("cookies.fenwickelliott.io")
 	check(err)
+	defer session.Close()
 	c := session.DB("services").C("services")
 	err = c.RemoveId(name)
 	if err != nil && err.Error() == "not found" {
 		fmt.Println("No service found named", name)
 		return
-	} else {
-		check(err)
 	}
+	check(err)
 	fmt.Println(name, "successfully deleted")
 }
 
