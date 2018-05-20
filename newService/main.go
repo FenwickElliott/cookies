@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/fenwickelliott/sync"
+	"github.com/fenwickelliott/cookies/sync"
 	"gopkg.in/mgo.v2"
 )
 
