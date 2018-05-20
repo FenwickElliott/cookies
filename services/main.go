@@ -16,6 +16,8 @@ func main() {
 	switch os.Args[1] {
 	case "new":
 		new()
+	case "delete":
+		delete()
 	default:
 		fmt.Println("Command not recognized")
 	}
@@ -75,6 +77,23 @@ func new() {
 	err = c.Insert(service)
 	check(err)
 	fmt.Println(service.Name, "successfully created")
+}
+
+func delete() {
+	var name string
+	fmt.Print("Name of service to delete: ")
+	fmt.Scanln(&name)
+	session, err := mgo.Dial("cookies.fenwickelliott.io")
+	check(err)
+	c := session.DB("services").C("services")
+	err = c.RemoveId(name)
+	if err != nil && err.Error() == "not found" {
+		fmt.Println("No service found named", name)
+		return
+	} else {
+		check(err)
+	}
+	fmt.Println(name, "successfully deleted")
 }
 
 func check(err error) {
