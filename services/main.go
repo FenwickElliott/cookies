@@ -91,7 +91,6 @@ func update() {
 	defer session.Close()
 	c := session.DB("services").C("services")
 	fmt.Scanln(&name)
-	// service := Service{}
 	var res bson.M
 	err = c.FindId(name).One(&res)
 	if err != nil && err.Error() == "not found" {
