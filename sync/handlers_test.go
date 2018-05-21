@@ -11,11 +11,6 @@ import (
 
 var testServiceCookie string
 
-type collection struct {
-	testServiceCookie string `bson:"_id"`
-	testPartnerCookie string `bson:"testPartner"`
-}
-
 func init() {
 	service = Service{
 		Name: "testService",
