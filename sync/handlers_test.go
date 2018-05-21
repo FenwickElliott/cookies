@@ -1,6 +1,8 @@
 package sync
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http/httptest"
 	"testing"
 
@@ -8,6 +10,11 @@ import (
 )
 
 var testServiceCookie string
+
+type collection struct {
+	testServiceCookie string `bson:"_id"`
+	testPartnerCookie string `bson:"testPartner"`
+}
 
 func init() {
 	service = Service{
@@ -28,7 +35,7 @@ func TestIn(t *testing.T) {
 	resp := w.Result()
 
 	if resp.StatusCode != 200 {
-		t.Errorf("in did not return 200 status code")
+		t.Errorf("/in did not return 200 status code")
 	}
 
 	for _, c := range resp.Cookies() {
@@ -38,5 +45,32 @@ func TestIn(t *testing.T) {
 	}
 	if testServiceCookie == "" {
 		t.Errorf("no service cookie set")
+	}
+}
+
+func TestPrint(t *testing.T) {
+	req := httptest.NewRequest("GET", "/print", nil)
+	w := httptest.NewRecorder()
+
+	service.print(w, req)
+	resp := w.Result()
+
+	if resp.StatusCode != 200 {
+		t.Error("/print did not return 200 status code")
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	check(err)
+	body = body[1:74]
+
+	var res map[string]string
+	err = json.Unmarshal(body, &res)
+	check(err)
+
+	if res["_id"] != testServiceCookie {
+		t.Errorf("returned service cookie didn't match")
+	}
+	if res["testPartner"] != "abc123" {
+		t.Errorf("returned partner cookie didn't match")
 	}
 }
